@@ -1,6 +1,6 @@
 from django.contrib import admin
+from django.utils.html import mark_safe
 from . import models
-# Register your models here.
 
 
 # Room Type, Facility, Amenity, HouseRule
@@ -15,26 +15,35 @@ class ItemAdmin(admin.ModelAdmin):
         return obj.rooms.count()
 
 
+# admin.TabularInline 는 무슨 기능?
+# RoomAdmin 클래스에서 inlines 속성에 추가하네.
+class PhotoInline(admin.TabularInline):
+    
+    model = models.Photo
+
 
 # Room
 @admin.register(models.Room)
 class RoomAdmin(admin.ModelAdmin):
 
+    inlines = (PhotoInline,)
+
     # admin panel의 상세페이지 UI
     fieldsets = (
         (
             "Basic Info",
-            {"fields": ("name", "description", "country", "address", "price")},
+            {"fields": ("name", "description", "country", "city", "address", "price")},
         ),
         ("Times", {"fields": ("check_in", "check_out", "instant_book")}),
         ("Spaces", {"fields": ("guests", "beds", "bedrooms", "baths")}),
         # 아코디언 효과
         (
             "More About the Space",
-            {
-                "classes": ("collapse",),
-                "fields": ("amenities", "facilities", "house_rules"),
-            },
+            # {
+            #     "classes": ("collapse",),
+            #     "fields": ("amenities", "facilities", "house_rules"),
+            # },
+            {"fields": ("amenities", "facilities", "house_rules")},
         ),
         ("Last Details", {"fields": ("host",)}),
     )
@@ -70,6 +79,9 @@ class RoomAdmin(admin.ModelAdmin):
         "country",
     )
 
+    # 얘는 어떤 기능?
+    raw_id_fields = ("host",)
+
     search_fields = ("=city", "^host__username")
 
     # 기존 ManyToMany Field UI에서 추가하기 위한 창에서 검색기능 추가됨.
@@ -92,4 +104,10 @@ class RoomAdmin(admin.ModelAdmin):
 # Photo
 @admin.register(models.Photo)
 class PhotoAdmin(admin.ModelAdmin):
-    pass
+    
+    list_display=("__str__", "get_thumbnail")
+
+    def get_thumbnail(self, obj):
+        return mark_safe(f'<img width="50px" src="{obj.file.url}" />')
+    
+    get_thumbnail.short_description = "Thumbnail"
