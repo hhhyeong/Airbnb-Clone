@@ -3,10 +3,12 @@ from core import models as core_models
 
 #### conversations 모델의 역할이 뭔지 새삼 재정립 필요.
 
-# 대화방에 여러 user들이 존재하고, 각 user는 여러 대화방을 가질 수 있음.
+# 대화방에 여러 user들이 존재하고, 각 user는 여러 대화방을 가질 수 있음.?
+# related_name : FK, MTM 필드의 속성.
+#    - 
 class Conversation(core_models.TimeStampedModel):
 
-    participants = models.ManyToManyField("users.User", blank=True)
+    participants = models.ManyToManyField("users.User", related_name="conversations", blank=True)
 
     def __str__(self):
         return str(self.created)
@@ -17,8 +19,8 @@ class Conversation(core_models.TimeStampedModel):
 class Message(core_models.TimeStampedModel):
 
     message = models.TextField()
-    user = models.ForeignKey("users.User", on_delete=models.CASCADE)
-    conversation = models.ForeignKey("Conversation", on_delete=models.CASCADE)
+    user = models.ForeignKey("users.User", related_name="message", on_delete=models.CASCADE)
+    conversation = models.ForeignKey("Conversation", related_name="message", on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.user} says: {self.text}"
