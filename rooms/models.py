@@ -70,6 +70,11 @@ class Room(core_models.TimeStampedModel):
     def __str__(self):
         return self.name
 
+    # #8.8 Intercepting Model save() and admin_save()
+    def save(self, *args, **kwargs):
+        self.city = str.capitalize(self.city)
+        super().save(*args, **kwargs)
+
     def total_rating(self):
         all_reviews = self.reviews.all()
         # all_ratings = []
