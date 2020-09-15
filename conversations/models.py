@@ -11,7 +11,23 @@ class Conversation(core_models.TimeStampedModel):
     participants = models.ManyToManyField("users.User", related_name="conversations", blank=True)
 
     def __str__(self):
-        return str(self.created)
+        # return str(self.created)
+        # 참가자들 리스트
+        usernames = []
+        for user in self.participants.all():
+            usernames.append(user.username)
+        return ", ".join(usernames)
+
+    # self의 정체? 본인 Conversations 클래스는 messages필드를 가지고있지 않은데???
+    def count_messages(self):
+        return self.messages.count()
+
+    count_messages.short_description = "Number of Messages"
+
+    def count_participants(self):
+        return self.participants.count()
+
+    count_participants.short_description = "Number of Participants"
 
 # 특정 대화방에서 특정 사용자가 말한 message를 표시함.
 # Conversation 테이블을 상속받지 않는걸 보니,
@@ -23,4 +39,6 @@ class Message(core_models.TimeStampedModel):
     conversation = models.ForeignKey("Conversation", related_name="message", on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"{self.user} says: {self.text}"
+        # text는 어디서나온거????
+        # return f"{self.user} says: {self.text}"
+        return f"{self.user} says: {self.message}"

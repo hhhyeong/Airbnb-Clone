@@ -7,6 +7,7 @@ from . import models
 # => ItemAdmin에 등록된 모델들은 추상모델을 상속받아서 모두 DB에 테이블로 추가되는 대상이 아닌 애들인가봄!
 @admin.register(models.RoomType, models.Facility, models.Amenity, models.HouseRule)
 class ItemAdmin(admin.ModelAdmin):
+    
     list_display = ("name", "used_by")
 
     # Item을 사용하고 있는 Room의 개수?
@@ -40,6 +41,7 @@ class RoomAdmin(admin.ModelAdmin):
 
 
     # admin panel의 목록 화면 UI
+    # admin.py에서 만든 함수명도, models.py에서 만든 함수명도 컬럼명으로 보여주기 가능.
     list_display = (
         "name",
         "country",
@@ -54,6 +56,7 @@ class RoomAdmin(admin.ModelAdmin):
         "instant_book",
         "count_amenities",
         "count_photos",
+        "total_rating",
     )
 
     list_filter = (
