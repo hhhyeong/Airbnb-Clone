@@ -1,33 +1,36 @@
 from django.db import models
 from core import models as core_models
 
-#### conversations 모델의 역할이 뭔지 새삼 재정립 필요.
+# 방에 대한 문의, 후기 기능.
+# guest와 그 외의 다른 user들이 host에게 문의할 수 있음.
 
-# 대화방에 여러 user들이 존재하고, 각 user는 여러 대화방을 가질 수 있음.?
 # related_name : FK, MTM 필드의 속성.
-#    - 
+#    -
 class Conversation(core_models.TimeStampedModel):
 
-    participants = models.ManyToManyField("users.User", related_name="conversations", blank=True)
+    participants = models.ManyToManyField(
+        "users.User", related_name="conversations", blank=True
+    )
 
-    def __str__(self):
-        # return str(self.created)
-        # 참가자들 리스트
-        usernames = []
-        for user in self.participants.all():
-            usernames.append(user.username)
-        return ", ".join(usernames)
+    # def __str__(self):
+    #     # return str(self.created)
+    #     # 참가자들 리스트
+    #     usernames = []
+    #     for user in self.participants.all():
+    #         usernames.append(user.username)
+    #     return ", ".join(usernames)
 
-    # self의 정체? 본인 Conversations 클래스는 messages필드를 가지고있지 않은데???
-    def count_messages(self):
-        return self.messages.count()
+    # # self의 정체? 본인 Conversations 클래스는 messages필드를 가지고있지 않은데???
+    # def count_messages(self):
+    #     return self.messages.count()
 
-    count_messages.short_description = "Number of Messages"
+    # count_messages.short_description = "Number of Messages"
 
-    def count_participants(self):
-        return self.participants.count()
+    # def count_participants(self):
+    #     return self.participants.count()
 
-    count_participants.short_description = "Number of Participants"
+    # count_participants.short_description = "Number of Participants"
+
 
 # 특정 대화방에서 특정 사용자가 말한 message를 표시함.
 # Conversation 테이블을 상속받지 않는걸 보니,
@@ -35,8 +38,12 @@ class Conversation(core_models.TimeStampedModel):
 class Message(core_models.TimeStampedModel):
 
     message = models.TextField()
-    user = models.ForeignKey("users.User", related_name="message", on_delete=models.CASCADE)
-    conversation = models.ForeignKey("Conversation", related_name="message", on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        "users.User", related_name="message", on_delete=models.CASCADE
+    )
+    conversation = models.ForeignKey(
+        "Conversation", related_name="message", on_delete=models.CASCADE
+    )
 
     def __str__(self):
         # text는 어디서나온거????
