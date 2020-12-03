@@ -77,7 +77,7 @@ class RoomAdmin(admin.ModelAdmin):
         "instant_book",
         "count_amenities",
         "count_photos",
-        # "total_rating",
+        "total_rating",
     )
 
     list_filter = (
@@ -109,13 +109,15 @@ class RoomAdmin(admin.ModelAdmin):
         print(obj)
         return obj.amenities.count()
 
-    # count_amenities.short_description = "hello sexy!"
+    count_amenities.short_description = "Amenity Count"
 
     # queryset 사용) Photo 객체의 개수 반환.
     #               => models.Photo 를 상속한것도 아닌데, Photo모델을 받을수 있나보지???
     #                  obj가 어떤의미일까. models.py 전부를 말하는걸까????
     def count_photos(self, obj):
         return obj.photos.count()
+
+    count_photos.short_description = "Photo Count"
 
 
 # Photo

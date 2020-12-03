@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse
 from django_countries.fields import CountryField
 from core import models as core_models
 
@@ -58,7 +59,7 @@ class Room(core_models.TimeStampedModel):
     city = models.CharField(max_length=80)
     price = models.IntegerField()
     address = models.CharField(max_length=140)
-    guests = models.IntegerField()
+    guests = models.IntegerField(help_text="How many people will be staying?")
     beds = models.IntegerField()
     bedrooms = models.IntegerField()
     baths = models.IntegerField()
@@ -94,6 +95,12 @@ class Room(core_models.TimeStampedModel):
         print(self.city)
         super().save(*args, **kwargs)
 
+    # get_absolute_url() : admin페이지의 세부내용 화면에 "View on site" 버튼 누르면 무조건 이동하는 경로 지정 가능.
+    # ex) return "photato"
+    # reverse : url name 입력하면 redirect해주는 함수. url에 argument가 필요하다면 추가.
+    def get_absolute_url(self):
+        return reverse("rooms:detail", kwargs={"pk": self.pk})
+
     # 각 room에 대하여, 모든 평균평점값(Avg.)의 평균값을 연산하는 함수.
     # 프론트엔드에서도 각 Room에 대한 평균평점이 보여지기 때문에, models.py에 작성함.
     # reviews모델의 room필드가 related_name으로 "reviews"를 갖기 때문에,
@@ -106,7 +113,9 @@ class Room(core_models.TimeStampedModel):
         #     all_ratings.append(review.rating_average())
         # return 0
         all_ratings = 0
-        for review in all_reviews:
-            # 각 room 객체와 연결된 reviews객체들의 값을 모두 가져와서, 더해줌.
-            all_ratings += review.rating_average()
-        return all_ratings / len(all_reviews)
+        if len(all_reviews) > 0:
+            for review in all_reviews:
+                # 각 room 객체와 연결된 reviews객체들의 값을 모두 가져와서, 더해줌.
+                all_ratings += review.rating_average()
+            return round(all_ratings / len(all_reviews))
+        return 0
