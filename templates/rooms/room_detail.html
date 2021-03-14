@@ -11,6 +11,7 @@
     <h3>{{room.description}}</h3>
 </div>
 <div>
+    <!-- foreign key 불러오기 -->
     <h2>By: {{room.host.username}}
     {% if room.host.superhost %}
         (superhost)
