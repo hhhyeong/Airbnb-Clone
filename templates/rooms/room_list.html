@@ -1,19 +1,11 @@
 {% extends "base.html" %}
-{% comment %} {% for room in potato  %}
-    <h1>{{room.name}} / ${{room.price}}</h1>
-{% endfor %} {% endcomment %}
-
 
 {% block page_title %}
     home - Home
 {% endblock page_title %}
 
 {% block content %}
-
-    {% comment %} {% for room in page.object_list %} {% endcomment %}
-    {{now}}
     {% for room in rooms %}
-        {% comment %} <h6>{{room.name}} / ${{room.price}}</h6> {% endcomment %}
         <h3>
             {% comment %} <a href="/rooms/{{room.pk}}"> // "room/(숫자)" 포맷을 기억해야함. {% endcomment %}
             <a href="{% url "rooms:detail" room.pk %}">
@@ -22,27 +14,17 @@
         </h3>
     {% endfor %}
 
-    {% comment %} <h5> Page {{page}} of {{page_count}}</h5> {% endcomment %}
-    {% comment %} <h5>
-    {% if page is not 1%}
-        <a href="?page{{page|add:-1}}">Previous</a> {% endcomment %}
-    {% if page.has_previous %}
-        <a href="?page{{page.previous_page_number}}">Previous</a>
+
+    {% if page_obj.has_previous %}
+        <a href="?page={{page_obj.previous_page_number}}">Previous</a>
     {% endif %}
 
-    Page {{page.number}} of {{page.paginator.num_pages}}
+    Page {{page_obj.number}} of {{page_obj.paginator.num_pages}}
 
-    {% if page.has_next %}
-        <a href="?page{{page.next_page_number}}">Next</a>
+    {% if page_obj.has_next %}
+        <a href="?page={{page_obj.next_page_number}}">Next</a>
     {% endif %}
 
-    {% comment %} {% if not page == page_count %}
-        <a href="?page{{page|add:1}}">Next</a>
-    {% endif %} {% endcomment %}
-
-    {% comment %} {% for page in page_range %}
-        <a href="?page={{page}}">{{page}}</a>
-    {% endfor %} {% endcomment %}
 
 
 
