@@ -69,7 +69,7 @@ def search(request):
     # request로 받은 도시의 정보 가져오기
     # parameter입력 없이 "/rooms/search"로 이동하면,
     # city가 None일 때, input에 기본값"Anywhere" 설정.
-    city = request.GET.get("city", "Anykind")
+    city = request.GET.get("city", "Anywhere")
     # if city == '':
     #     city = "Anykind"
     # city = str.capitalize(city)
@@ -81,12 +81,13 @@ def search(request):
     beds = int(request.GET.get("beds", 0))
     print(beds)
     baths = int(request.GET.get("baths", 0))
-    instant = request.GET.get("instant", False)
-    super_host = request.GET.get("super_host", False)
+    instant = bool(request.GET.get("instant", False))
+    superhost = bool(request.GET.get("superhost", False))
 
     s_amenities = request.GET.getlist("amenities")
     s_facilities = request.GET.getlist("facilities")
     print(s_amenities, s_facilities)
+
 
     # 선택한 정보
     form = {
@@ -103,8 +104,7 @@ def search(request):
         "s_amenities" : s_amenities,
         "s_facilities" : s_facilities,
         "instant" : instant,
-        "super_host" : super_host
-
+        "superhost" : superhost
     }
 
     room_types = models.RoomType.objects.all()
@@ -119,5 +119,50 @@ def search(request):
         "amenities" : amenities,
         "facilities" : facilities,
     }
+
+    filter_args = {}
+
+    if city != "Anywhere":
+        filter_args["city__startswith"] = city
+
+
+    filter_args["country"] = country
+
+    if room_type != 0:
+        filter_args["room_type__pk"] = room_type
+    
+    if price != 0:
+        filter_args["price__lte"] = price
+
+    if guests != 0:
+        filter_args["guests__lte"] = guests
+
+    if beds != 0:
+        filter_args["beds__lte"] == beds
+
+    if baths != 0:
+        filter_args["baths__lte"] == baths
+    
+    # print(bool(instant), bool(superhost))
+
+    if instant is True:
+        filter_args["instant_book"] = True
+
+    if superhost is True:
+        filter_args["host__superhost"] = True
+
+    if len(s_amenities) > 0:
+        for s_amenity in s_amenities:
+            filter_args["amenities__pk"] = int(s_amenity)
+    
+    if len(s_facilities) > 0:
+        for s_facility in s_facilities:
+            filter_args["facilities__pk"] = int(s_facility)
+
+    # Room.objects.filter(city__startswith='Perryshire')
+    # 위의 예제처럼 city__startswith='Perryshire'를 dict형인 filter_args가 어떻게 대체를한다는거지????????
+    rooms = models.Room.objects.filter(**filter_args)
+
     print(form)
-    return render(request, "rooms/search.html", {**form, **choices})
+    # print(choices)
+    return render(request, "rooms/search.html", {**form, **choices, "rooms" : rooms})

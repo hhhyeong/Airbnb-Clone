@@ -65,9 +65,9 @@
             />
         </div>
         <div>
-            <label for="super_host">Superhost Only?</label>
-            <input type="checkbox" name="super_host" id="super_host" 
-            {% if super_host %}
+            <label for="superhost">Superhost Only?</label>
+            <input type="checkbox" name="superhost" id="superhost" 
+            {% if superhost %}
                 checked
             {% endif %}
             />
@@ -104,7 +104,8 @@
         </div>
     </form>
     <h3>Results</h3>
-
-
+    {% for room in rooms %}
+        <h3> {{room.name}} </h3>
+    {% endfor %}
 
 {% endblock content %}
