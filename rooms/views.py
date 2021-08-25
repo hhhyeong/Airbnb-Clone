@@ -65,104 +65,79 @@ class RoomDetail(DetailView):
 
 
 def search(request):
-    # form = forms.SearchForm()
-    # request로 받은 도시의 정보 가져오기
-    # parameter입력 없이 "/rooms/search"로 이동하면,
-    # city가 None일 때, input에 기본값"Anywhere" 설정.
-    city = request.GET.get("city", "Anywhere")
-    # if city == '':
-    #     city = "Anykind"
-    # city = str.capitalize(city)
-    country = request.GET.get("country", "KR")
-    room_type = int(request.GET.get("room_type", 0))
-    price = int(request.GET.get("price", 0))
-    guests = int(request.GET.get("guests", 0))
-    bedrooms = int(request.GET.get("bedrooms",0))
-    beds = int(request.GET.get("beds", 0))
-    print(beds)
-    baths = int(request.GET.get("baths", 0))
-    instant = bool(request.GET.get("instant", False))
-    superhost = bool(request.GET.get("superhost", False))
+    # html 소스 보면 테이블 태그임 (<th><tr> 등).
+    # form = forms.SearchForm(request.GET)
+    # <p>태그로 변환.
+    # form = form.as_p()
 
-    s_amenities = request.GET.getlist("amenities")
-    s_facilities = request.GET.getlist("facilities")
-    print(s_amenities, s_facilities)
+    country = request.GET.get("country")
+    print(country)
 
+    # 사용자가 입력한 country값을 form이 기억하고 있을 경우.
+    if country:
+        # bounded form 반환.
+        # GET으로 받은 모든 정보를 다 form에게 전달.
+        form = forms.SearchForm(request.GET)
+        # 폼에서 아무런 에러(유효성 검사 등..)가 없다면 실행.
+        if form.is_valid():
+            # 폼에서 정리된 데이터를 가져올수있음.
+            print(form.cleaned_data)
+            # city = form.cleaned_data["city"]
+            city = form.cleaned_data.get("city")
+            print(city)
+            country = form.cleaned_data.get("country")
+            room_type = form.cleaned_data.get("room_type")
+            price = form.cleaned_data.get("price")
+            guests = form.cleaned_data.get("guests")
+            beds = form.cleaned_data.get("beds")
+            bedrooms = form.cleaned_data.get("bedrooms")
+            baths = form.cleaned_data.get("baths")
+            instant_book = form.cleaned_data.get("instant_book")
+            superhost = form.cleaned_data.get("superhost")
+            amenities = form.cleaned_data.get("amenities")
+            facilities = form.cleaned_data.get("facilities")
 
-    # 선택한 정보
-    form = {
-        "city" : city,
-        # selected room_type
-        "s_room_type" : room_type,
-        # selected country. 프론트에서 헷갈리지않게 네이밍. 프론트에 넘어가는 변수는 "s_country".
-        "s_country" : country,
-        "price" : price,
-        "guests" : guests,
-        "bedrooms" : bedrooms,
-        "beds" : beds,
-        "baths" : baths,
-        "s_amenities" : s_amenities,
-        "s_facilities" : s_facilities,
-        "instant" : instant,
-        "superhost" : superhost
-    }
+            filter_args = {}
 
-    room_types = models.RoomType.objects.all()
-    # return render(request, "rooms/search.html", {"city": city, "countries" : countries, "room_types" : room_types},)
-    amenities = models.Amenity.objects.all()
-    facilities = models.Facility.objects.all()
+            if city != "Anywhere":
+                filter_args["city__startswith"] = city
 
-    # option에 보여줄 선택지 정보.
-    choices = {
-        "countries" : countries,
-        "room_types" : room_types,
-        "amenities" : amenities,
-        "facilities" : facilities,
-    }
+            filter_args["country"] = country
 
-    filter_args = {}
+            if room_type is not None:
+                filter_args["room_type__pk"] = room_type
+            
+            if price is not None:
+                filter_args["price__lte"] = price
 
-    if city != "Anywhere":
-        filter_args["city__startswith"] = city
+            if guests is not None:
+                filter_args["guests__gte"] = guests
 
+            if beds is not None:
+                filter_args["beds__gte"] == beds
 
-    filter_args["country"] = country
+            if baths is not None:
+                filter_args["baths__gte"] == baths
 
-    if room_type != 0:
-        filter_args["room_type__pk"] = room_type
-    
-    if price != 0:
-        filter_args["price__lte"] = price
+            if instant_book is True:
+                filter_args["instant_book"] = True
 
-    if guests != 0:
-        filter_args["guests__lte"] = guests
+            if superhost is True:
+                filter_args["host__superhost"] = True
 
-    if beds != 0:
-        filter_args["beds__lte"] == beds
+            for amenity in amenities:
+                filter_args["amenities"] = amenity
+            
+            for facility in facilities:
+                filter_args["facilities"] = facility
+            print(filter_args)
+            rooms = models.Room.objects.filter(**filter_args)
+    # form에서 사용자가 선택한 값들을 기억하지 못할 경우,
+    else:
+        # unbounded form 반환.
+        # country가 없으면 유효성검사 할필요 없음.
+        form = forms.SearchForm()
 
-    if baths != 0:
-        filter_args["baths__lte"] == baths
-    
-    # print(bool(instant), bool(superhost))
-
-    if instant is True:
-        filter_args["instant_book"] = True
-
-    if superhost is True:
-        filter_args["host__superhost"] = True
-
-    if len(s_amenities) > 0:
-        for s_amenity in s_amenities:
-            filter_args["amenities__pk"] = int(s_amenity)
-    
-    if len(s_facilities) > 0:
-        for s_facility in s_facilities:
-            filter_args["facilities__pk"] = int(s_facility)
-
-    # Room.objects.filter(city__startswith='Perryshire')
-    # 위의 예제처럼 city__startswith='Perryshire'를 dict형인 filter_args가 어떻게 대체를한다는거지????????
-    rooms = models.Room.objects.filter(**filter_args)
-
-    print(form)
-    # print(choices)
-    return render(request, "rooms/search.html", {**form, **choices, "rooms" : rooms})
+    # print(form)
+    print(rooms)
+    return render(request, "rooms/search.html", {"form":form, "rooms":rooms})
