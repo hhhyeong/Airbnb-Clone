@@ -6,6 +6,24 @@ from django_countries import countries
 from . import models, forms
 
 
+
+# def all_rooms(request):
+#     page = request.GET.get("page", 1)
+#     room_list = models.Room.objects.all()
+#     paginator = Paginator(room_list, 10, orphans=5)
+
+#     try:
+#         rooms = paginator.page(int(page))
+#         return render(request, "rooms/home.html", {"page":rooms})
+#     except EmptyPage:
+#         return redirect
+
+
+# Django Documentation 참고. abstract 속성을 사용하는 방법 참고 필수!
+# CCV(classy class view) 사이트 참고. ListView의 속성이 자세하게 나오지 않아 헷갈릴수있음.
+# ListView : 페이지가 objects의 목록을 대변한다.
+# 자동으로 "[app_name]_list.html"을 찾아서 반환한다.
+# rooms_list.html로 이동.
 class HomeView(ListView):
 
     """ HomeView Definition """
@@ -18,7 +36,26 @@ class HomeView(ListView):
     context_object_name = "rooms"
 
 
-# 자동으로 room_detail.html 을 찾아서 반환함.
+#################### RoomDetail과 같은 기능을 하는 FBV
+# params)
+# request : urls.py를 통해 전달받은 request(uri값)
+# potato : urls.py에서 <int:pk>로 넘겨준 값을 가짐. urldispatcher에 의해 분기될 값.
+def room_detail(request, pk):
+    print("_====================")
+    print("pk : " + pk)
+    # DB로부터 room데이터 가져오기.
+    try:
+        room = models.Room.object.get(pk=pk)
+        print(room)
+        # {"room":room} : "room"이라는 context에 room객체 정보를 담아 프론트 페이지에 전달.
+        return render(request, "rooms/dddetail.html", {"room": room})
+    except models.Room.DoesNotExist:
+        # return redirect(reverse("core:home"))
+        return Http404()
+
+
+# 세부페이지로 이동하게 하는 CBV임.
+# 자동으로 room_detail.html 을 찾아서 반환함....ㄷㄷㄷ
 class RoomDetail(DetailView):
 
     """ RoomDetail Definition """
@@ -28,9 +65,12 @@ class RoomDetail(DetailView):
 
 class SearchView(View):
     def get(self, request):
-        print(request)
+        # html 소스 보면 테이블 태그임 (<th><tr> 등).
+        # form = forms.SearchForm(request.GET)
+        # <p>태그로 변환.
+        # form = form.as_p()
+
         country = request.GET.get("country")
-        print(country)
 
         # 사용자가 입력한 country값을 form이 기억하고 있을 경우.
         if country:
@@ -90,17 +130,13 @@ class SearchView(View):
                 for facility in facilities:
                     filter_args["facilities"] = facility
                 print(filter_args)
-                qs = models.Room.objects.filter(**filter_args).order_by("-city")
-                paginator = Paginator(qs, 10, orphans=5)
-                page = request.GET.get("page", 1)
-                rooms = paginator.get_page(page)
-                print(rooms)
-
-            return render(request, "rooms/search.html", {"form":form, "rooms":rooms})
-        
+                rooms = models.Room.objects.filter(**filter_args)
         # form에서 사용자가 선택한 값들을 기억하지 못할 경우,
         else:
+            # unbounded form 반환.
+            # country가 없으면 유효성검사 할필요 없음.
             form = forms.SearchForm()
 
-        return render(request, "rooms/search.html", {"form":form})
-        
+        # print(form)
+        print(rooms)
+        return render(request, "rooms/search.html", {"form":form, "rooms":rooms})
