@@ -18,6 +18,9 @@ ALLOWED_HOSTS = []
 # ALLOWED_HOSTS = "*"
 
 # Application definition
+AUTHENTICATION_BACKENDS = (
+    ('django.contrib.auth.backends.ModelBackend'),
+)
 
 DJANGO_APPS = [
     "django.contrib.admin",
